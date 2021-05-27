@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: makisu-build-devops
+  labels:
+    makisu-build: 'true'
+    makisu-build-name: makisu-build-devops
+spec:
+  initContainers:
+    - args:
+        - "sh"
+        - "-c"
+        - "while true; do sleep 1; if [ -f /tmp/complete ]; then break; fi done"
+      image: alpine
+      imagePullPolicy: IfNotPresent
+      name: makisu-init
+      volumeMounts:
+        - mountPath: /makisu-storage
+          name: storage
+        - mountPath: /makisu-context
+          name: context
+  containers:
+    - name: makisu
+      args:
+        - build
+        - '--modifyfs=true'
+        - '--log-fmt=console'
+        - '-t=teste/teste-SNAPSHOT'
+        - /makisu-context/
+      image: 'gcr.io/uber-container-tools/makisu:v0.4.0'
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: /makisu-context
+          name: context
+        - mountPath: /makisu-storage
+          name: storage
+  restartPolicy: Never
+  volumes:
+    - emptyDir: {}
+      name: context
+    - emptyDir: {}
+      name: storage
+    - name: makis
+
